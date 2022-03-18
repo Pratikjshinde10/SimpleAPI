@@ -31,7 +31,6 @@ namespace SimpleAPI.Controllers
         public IEnumerable<WeatherForecast> Get()
         {
             string keyid = _config.GetValue<string>("keyid");
-            Summaries.Add(keyid);
             var rng = new Random();
             return Enumerable.Range(1, 12).Select(index => new WeatherForecast
             {
