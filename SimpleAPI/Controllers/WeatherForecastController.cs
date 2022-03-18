@@ -15,18 +15,23 @@ namespace SimpleAPI.Controllers
         {
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching", "Pleasant"
         };
+        
+        private readonly IConfiguration _config;
 
         private readonly ILogger<WeatherForecastController> _logger;
 
-        public WeatherForecastController()
+        public WeatherForecastController(IConfiguration config)
         {
+            _config = config;
         }      
 
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
+            string keyid = _config.GetValue<string>("keyid");
+            Summaries.Add(keyid);
             var rng = new Random();
-            return Enumerable.Range(1, 11).Select(index => new WeatherForecast
+            return Enumerable.Range(1, 12).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),
                 TemperatureC = rng.Next(-20, 55),
