@@ -31,7 +31,7 @@ steps:
 
 - task: PublishBuildArtifacts@1
   displayName: 'publish artifacts'
--
+
 # Update appsettings.json via FileTransform task.
 - task: FileTransform@1
   displayName: 'File transformation: appsettings.json'
