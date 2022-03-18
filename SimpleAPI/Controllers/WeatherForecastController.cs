@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +18,6 @@ namespace SimpleAPI.Controllers
         };
         
         private readonly IConfiguration _config;
-
-        private readonly ILogger<WeatherForecastController> _logger;
 
         public WeatherForecastController(IConfiguration config)
         {
