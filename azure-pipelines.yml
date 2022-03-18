@@ -29,13 +29,10 @@ steps:
     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
     zipAfterPublish: true
 
+- task: FileTransform@1
+  inputs:
+    folderPath: '$(Builder.ArtifactStagingDirectory)/**/*.zip'
+    fileType: 'json'
+    targetFiles: '**/appsettings.json'
 - task: PublishBuildArtifacts@1
   displayName: 'publish artifacts'
-
-# Update appsettings.json via FileTransform task.
-- task: FileTransform@1
-  displayName: 'File transformation: appsettings.json'
-  inputs:
-    folderPath: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    targetFiles: '**/appsettings.json'
-    fileType: json
