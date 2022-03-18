@@ -31,3 +31,8 @@ steps:
 
 - task: PublishBuildArtifacts@1
   displayName: 'publish artifacts'
+
+- task: FileTransform@1
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    fileType: 'json'
