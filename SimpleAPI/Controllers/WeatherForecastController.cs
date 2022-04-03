@@ -30,7 +30,6 @@ namespace SimpleAPI.Controllers
         {
             string keyid = _config.GetSection("KEYID").Value; 
             var rng = new Random();
-            Convert.ToInt32("ter");
             return Enumerable.Range(1, 12).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),
