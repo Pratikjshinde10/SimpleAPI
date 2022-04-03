@@ -30,6 +30,7 @@ namespace SimpleAPI.Controllers
         {
             string keyid = _config.GetSection("KEYID").Value; 
             var rng = new Random();
+            Convert.ToString("123")
             
             return Enumerable.Range(1, 12).Select(index => new WeatherForecast
             {
