@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 
 namespace SimpleAPI
@@ -28,6 +32,17 @@ namespace SimpleAPI
         {
 
             services.AddControllers();
+            services.AddMicrosoftIdentityWebApiAuthentication(Configuration)
+            .EnableTokenAcquisitionToCallDownstreamApi()
+            .AddMicrosoftGraph(
+                        Configuration["https://graph.microsoft.com/beta/me/"],
+                        Configuration.GetValue<string>("Directory.Read.All")
+            ).AddInMemoryTokenCaches();
+            services.Configure<JwtBearerOptions>(
+                JwtBearerDefaults.AuthenticationScheme, options => {
+                   options.TokenValidationParameters.ValidIssuers = new[] { "https://sts.windows.net/fbadfc59-b650-4877-b930-13cbaaf2e0dc/" };
+                   options.TokenValidationParameters.ValidAudiences = new[] { "0c81e5bc-a5ec-4b13-9c78-2fcbb75b1ba0/.default" };
+                });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SimpleAPI", Version = "v1" });
@@ -45,7 +60,7 @@ namespace SimpleAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
