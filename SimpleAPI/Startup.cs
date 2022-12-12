@@ -32,18 +32,19 @@ namespace SimpleAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+             // Adds Microsoft Identity platform (Azure AD B2C) support to protect this Api
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApi(options =>
+            {
+                Configuration.Bind("AzureAd", options);
 
-            services.AddMicrosoftIdentityWebApiAuthentication(Configuration,"AzureAd")
-                    .EnableTokenAcquisitionToCallDownstreamApi().AddInMemoryTokenCaches();
-
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme);
-            // services.AddControllersWithViews(options =>
-            // {
-            //     var policy = new AuthorizationPolicyBuilder()
-            //         .RequireAuthenticatedUser()
-            //         .Build();
-            //     options.Filters.Add(new AuthorizeFilter(policy));
-            // });
+                options.TokenValidationParameters.NameClaimType = "name";
+                options.TokenValidationParameters.ValidIssuers = new[] {
+                    "https://sts.windows.net/fbadfc59-b650-4877-b930-13cbaaf2e0dc/"
+                };
+                options.TokenValidationParameters.ValidAudiences = new [] {"0c81e5bc-a5ec-4b13-9c78-2fcbb75b1ba0"};
+            },
+            options => { Configuration.Bind("AzureAd", options); });
 
             services.AddSwaggerGen(c =>
             {
@@ -71,7 +72,7 @@ namespace SimpleAPI
             app.UseHttpsRedirection();
 
             app.UseRouting();
-            //app.UseAuthentication();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
