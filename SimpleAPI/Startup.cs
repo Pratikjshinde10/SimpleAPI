@@ -32,16 +32,14 @@ namespace SimpleAPI
         {
 
             services.AddControllers();
-            services.AddMicrosoftIdentityWebApiAuthentication(Configuration)
-            .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddMicrosoftGraph(
-                        Configuration["https://graph.microsoft.com/beta/me/"],
-                        Configuration.GetValue<string>("Directory.Read.All")
-            ).AddInMemoryTokenCaches();
-            services.Configure<JwtBearerOptions>(
-                JwtBearerDefaults.AuthenticationScheme, options => {
-                   options.TokenValidationParameters.ValidIssuers = new[] { "https://sts.windows.net/fbadfc59-b650-4877-b930-13cbaaf2e0dc/" };
-                   options.TokenValidationParameters.ValidAudiences = new[] { "0c81e5bc-a5ec-4b13-9c78-2fcbb75b1ba0/.default" };
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddMicrosoftIdentityWebApi(options =>
+                {
+                Configuration.Bind("AzureAd", options);
+                    options.Events = new JwtBearerEvents();
+                }, options =>
+                {
+                    Configuration.Bind("AzureAd", options);
                 });
             services.AddSwaggerGen(c =>
             {
@@ -55,7 +53,14 @@ namespace SimpleAPI
            
             app.UseDeveloperExceptionPage();
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "SimpleAPI v1"));
+            app.UseSwaggerUI(c =>  {
+                                     c.SwaggerEndpoint("/swagger/v1/swagger.json", "SimpleAPI v1");
+                                     c.RoutePrefix = string.Empty;
+                                     c.OAuthClientId("76f5b655-0364-427c-a730-6e6e8f3211e7");
+                                     c.OAuthUsePkce();
+                                     c.OAuthScopeSeparator(" ");
+                                   }
+                            );
             
             app.UseHttpsRedirection();
 
