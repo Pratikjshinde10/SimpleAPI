@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,21 +31,39 @@ namespace SimpleAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddControllers();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(options =>
+             .AddMicrosoftIdentityWebApi(options =>
                 {
-                Configuration.Bind("AzureAd", options);
+                    Configuration.Bind("AzureAd", options);
                     options.Events = new JwtBearerEvents();
+                    options.Events.OnTokenValidated = async context =>
+                    {
+                        string[] allowedClientApps =
+                        {
+                            "76f5b655-0364-427c-a730-6e6e8f3211e7"
+                        };
+                        string clientappId = context?.Principal?.Claims
+                            .FirstOrDefault(x => x.Type == "azp" || x.Type == "appid")?.Value;
+
+                        if (!allowedClientApps.Contains(clientappId))
+                        {
+                            throw new UnauthorizedAccessException("The client app is not permitted to access this API");
+                        }
+
+                        await Task.CompletedTask;
+                    };
+
                 }, options =>
                 {
                     Configuration.Bind("AzureAd", options);
                 });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SimpleAPI", Version = "v1" });
             });
+            services.AddControllers();
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
