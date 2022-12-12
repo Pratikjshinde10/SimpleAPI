@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,32 +32,16 @@ namespace SimpleAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-             .AddMicrosoftIdentityWebApi(options =>
-                {
-                    Configuration.Bind("AzureAd", options);
-                    options.Events = new JwtBearerEvents();
-                    options.Events.OnTokenValidated = async context =>
-                    {
-                        string[] allowedClientApps =
-                        {
-                            "76f5b655-0364-427c-a730-6e6e8f3211e7"
-                        };
-                        string clientappId = context?.Principal?.Claims
-                            .FirstOrDefault(x => x.Type == "azp" || x.Type == "appid")?.Value;
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
 
-                        if (!allowedClientApps.Contains(clientappId))
-                        {
-                            throw new UnauthorizedAccessException("The client app is not permitted to access this API");
-                        }
-
-                        await Task.CompletedTask;
-                    };
-
-                }, options =>
-                {
-                    Configuration.Bind("AzureAd", options);
-                });
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
 
             services.AddSwaggerGen(c =>
             {
